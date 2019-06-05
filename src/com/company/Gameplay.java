@@ -33,26 +33,55 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener {
 
     public void paint(Graphics g) {
         //background
-        g.setColor(Color.green);
+        g.setColor(Color.black);
         g.fillRect(1,1,692,592);
 
         //drawing map
         map.draw((Graphics2D)g);
 
-
         //borders
-        g.setColor(Color.cyan);
+        g.setColor(Color.yellow);
         g.fillRect(0,0,3,592);
         g.fillRect(0,0,692,3);
         g.fillRect(691,0,3,592);
 
         // the paddle
-        g.setColor(Color.black);
+        g.setColor(Color.green);
         g.fillRect(playerX,550,100,8);
 
         // the ball
-        g.setColor(Color.red);
+        g.setColor(Color.yellow);
         g.fillOval(ballPositionX,ballPositionY,20,20);
+
+        if(ballPositionY >570) {
+            play = false;
+            ballXDirection =0;
+            ballYDirection =0;
+            g.setColor(Color.red);
+            g.setFont(new Font ("serif", Font.BOLD, 60));
+            g.drawString("Game Over", 200,300);
+
+            g.setFont(new Font ("serif", Font.BOLD, 30));
+            g.drawString("Press Enter to Restart", 210,350);
+        }
+
+
+        if(totalBricks <= 0) {
+            play = false;
+            ballXDirection =0;
+            ballYDirection =0;
+            g.setColor(Color.red);
+            g.setFont(new Font ("serif", Font.BOLD, 60));
+            g.drawString("You Won", 200,300);
+
+            g.setFont(new Font ("serif", Font.BOLD, 30));
+            g.drawString("Press Enter to Restart", 210,350);
+        }
+
+        //score
+        g.setColor(Color.cyan);
+        g.setFont(new Font ("arial", Font.BOLD, 30));
+        g.drawString(""+score, 10,30);
 
         g.dispose();
 
@@ -67,8 +96,8 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener {
             if(new Rectangle(ballPositionX,ballPositionY,20,20).intersects((new Rectangle(playerX,550,100,8)))) {
                 ballYDirection = -ballYDirection;
             }
-            for(int i = 0; i< map.map.length; i++){
-                for (int j = 0; j<map.map.length; j++){
+            A : for(int i = 0; i< map.map.length; i++){
+                for (int j = 0; j< map.map[0].length; j++){
                     if(map.map[i][j]> 0) {
                         int brickX = j * map.brickWidth +80;
                         int brickY = i * map.brickHeight +50;
@@ -81,6 +110,18 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener {
 
                         if(ballRect.intersects((brickRect))){
                             map.setBrickValue(0,i,j);
+                            totalBricks--;
+                            score+= 10;
+
+                            if(ballPositionX + 19 <= brickRect.x || ballPositionX + 1 >= brickRect.x + brickRect.width){
+                                ballXDirection = -ballXDirection;
+                            }
+                            else {
+                                ballYDirection = -ballYDirection;
+                            }
+
+                            break A;
+
                         }
                     }
                 }
@@ -129,6 +170,20 @@ public class Gameplay extends JPanel implements KeyListener, ActionListener {
             }
             else {
                 moveLeft();
+            }
+        }
+
+        if(e.getKeyCode() == KeyEvent.VK_ENTER) {
+            if(!play) {
+                play = true;
+                ballPositionX = 120;
+                ballPositionY = 350;
+                ballXDirection = -1;
+                ballYDirection = -2;
+                score = 0;
+                totalBricks = 21;
+                map = new MapGenerator(3,7);
+                repaint();
             }
         }
 
